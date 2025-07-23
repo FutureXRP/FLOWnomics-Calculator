@@ -319,4 +319,325 @@
         }
     </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLOWnomics Calculator</title>
+    <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.22.9/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <div id="error" className="hidden text-red-600 text-center p-4"></div>
+    <script type="text/babel">
+        const { useState, Component } = React;
+
+        // Error Boundary Component
+        class ErrorBoundary extends Component {
+            state = { error: null };
+            static getDerivedStateFromError(error) {
+                return { error: error.message };
+            }
+            render() {
+                if (this.state.error) {
+                    return <div className="text-red-600 text-center p-4">Error: {this.state.error}</div>;
+                }
+                return this.props.children;
+            }
+        }
+
+        function formatNumber(value) {
+            if (isNaN(value) || value === Infinity) return '0.00';
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+        }
+
+        function parseInput(value) {
+            if (!value) return 0;
+            return parseFloat(value.replace(/,/g, '')) || 0;
+        }
+
+        function FLOWnomicsCalculator() {
+            // State for inputs
+            const [settlementVolumeType, setSettlementVolumeType] = useState('total');
+            const [asv, setAsv] = useState('');
+            const [asvGrowthRate, setAsvGrowthRate] = useState('');
+            const [velocity, setVelocity] = useState('');
+            const [velocityChangeRate, setVelocityChangeRate] = useState('');
+            const [forecastHorizon, setForecastHorizon] = useState('');
+            const [totalSupply, setTotalSupply] = useState('');
+            const [lockedSupplyPercent, setLockedSupplyPercent] = useState('');
+            const [additionalLockedSupply, setAdditionalLockedSupply] = useState('');
+            const [yearlyBurnRate, setYearlyBurnRate] = useState('');
+            const [useBurnRate, setUseBurnRate] = useState(false);
+            const [liquidityBuffer, setLiquidityBuffer] = useState('');
+            const [useLiquidityBuffer, setUseLiquidityBuffer] = useState(false);
+            const [currentPrice, setCurrentPrice] = useState('');
+            // Placeholder data
+            const [activeWallets] = useState(1000000);
+            const [totalGasUsed] = useState(1000000);
+            const [marketDepth] = useState(1000000000);
+            const [slippageThreshold] = useState(0.01);
+            const [velocityStdDev] = useState(0.5);
+            const [maxTransactionCapacity] = useState(1000000000000);
+            const [volatility] = useState(0.3);
+            const [flowStdDev30] = useState(1000000000);
+            const [flowStdDev90] = useState(1500000000);
+            const [marketReturn] = useState(0.1);
+            const [cryptoMarketCorrelation] = useState(0.7);
+            const [avgTxConfirmationTime] = useState(2);
+            const [industryBenchmark] = useState(5);
+            const [walletGrowthRate] = useState(0.2);
+            const [giniCoefficient] = useState(0.4);
+
+            // Parse inputs
+            const parsedASV = parseInput(asv);
+            const parsedASVGrowthRate = parseInput(asvGrowthRate) / 100;
+            const parsedVelocity = parseInput(velocity) || 1;
+            const parsedVelocityChangeRate = parseInput(velocityChangeRate) / 100;
+            const parsedForecastHorizon = parseInput(forecastHorizon) || 5;
+            const parsedTotalSupply = parseInput(totalSupply);
+            const parsedLockedSupplyPercent = parseInput(lockedSupplyPercent) / 100;
+            const parsedAdditionalLockedSupply = parseInput(additionalLockedSupply) / 100;
+            const parsedYearlyBurnRate = parseInput(yearlyBurnRate);
+            const parsedLiquidityBuffer = parseInput(liquidityBuffer) / 100;
+            const parsedCurrentPrice = parseInput(currentPrice);
+
+            // Calculations
+            const effectiveSupply = parsedTotalSupply * (1 - parsedLockedSupplyPercent);
+            const marketCap = effectiveSupply * parsedCurrentPrice;
+            const flow = parsedASV / parsedVelocity;
+            const adjustedFlow = flow * (1 + (useLiquidityBuffer ? parsedLiquidityBuffer : 0));
+            const impliedPrice = effectiveSupply ? adjustedFlow / effectiveSupply : 0;
+            const fairMarketGap = parsedCurrentPrice ? ((impliedPrice - parsedCurrentPrice) / parsedCurrentPrice) * 100 : 0;
+            const flowToPriceRatio = (parsedCurrentPrice * effectiveSupply) ? flow / (parsedCurrentPrice * effectiveSupply) : 0;
+            const flowPremium = adjustedFlow ? ((marketCap - adjustedFlow) / adjustedFlow) * 100 : 0;
+            const flowYield = marketCap ? flow / marketCap : 0;
+            const flowEfficiency = marketCap ? parsedASV / marketCap : 0;
+            const settlementElasticity = marketCap ? parsedASVGrowthRate / 0.01 : 0;
+            const effectiveVsNominalVelocity = parsedVelocity ? parsedVelocity / (parsedVelocity + 0.1) : 0;
+            const utilizationRate = adjustedFlow ? parsedASV / adjustedFlow : 0;
+            const gasEfficiencyIndex = totalGasUsed ? parsedASV / totalGasUsed : 0;
+            const settlementPerWallet = activeWallets ? parsedASV / activeWallets : 0;
+            const activeUserConcentration = giniCoefficient;
+            const liquidityStressBufferRatio = marketCap ? (parsedLiquidityBuffer * flow) / marketCap : 0;
+            const priceStabilityVelocityDrop = (effectiveSupply && parsedVelocity) ? (adjustedFlow / (effectiveSupply * (parsedVelocity * 0.9))) / (impliedPrice || 1) : 0;
+            const burnAdjustedSupply = effectiveSupply - (useBurnRate ? parsedYearlyBurnRate : 0);
+            const burnAmplificationFactor = (burnAdjustedSupply && impliedPrice) ? (adjustedFlow / burnAdjustedSupply) / impliedPrice : 0;
+            const lockupFlexImpact = (effectiveSupply && impliedPrice) ? (adjustedFlow / (effectiveSupply * (1 - parsedAdditionalLockedSupply))) / impliedPrice : 0;
+            const liquidityDepthRatio = parsedASV ? marketDepth / parsedASV : 0;
+            const velocityStabilityIndex = parsedVelocity ? velocityStdDev / parsedVelocity : 0;
+            const networkCongestionResistance = parsedASV ? maxTransactionCapacity / parsedASV : 0;
+            const speculativeVolatilityBuffer = (parsedASV && volatility) ? (parsedLiquidityBuffer * marketCap) / (parsedASV * volatility) : 0;
+            const futureSupplyAdjustmentFactor = effectiveSupply ? (effectiveSupply * (1 - parsedAdditionalLockedSupply)) / effectiveSupply : 0;
+            const flowVolatility30 = flow ? flowStdDev30 / flow : 0;
+            const flowVolatility90 = flow ? flowStdDev90 / flow : 0;
+            const annualFlowReturn = marketCap ? (flow / marketCap) - 1 : 0;
+            const annualizedFlowReturnVsMarket = marketReturn ? annualFlowReturn / marketReturn : 0;
+            const impliedDownsideASVDrop = (effectiveSupply && impliedPrice) ? (adjustedFlow / (effectiveSupply * (parsedASV * 0.8))) / impliedPrice : 0;
+            const impliedUpsideVelocityHalf = (effectiveSupply && impliedPrice) ? (adjustedFlow / (effectiveSupply * (parsedVelocity * 0.5))) / impliedPrice : 0;
+            const marketCorrelationRisk = cryptoMarketCorrelation;
+            const projectedASV = parsedASV * Math.pow(1 + parsedASVGrowthRate, parsedForecastHorizon);
+            const projectedVelocity = parsedVelocity * Math.pow(1 + parsedVelocityChangeRate, parsedForecastHorizon);
+            const projectedSupply = effectiveSupply * (1 - parsedAdditionalLockedSupply);
+            const futurePrice = (projectedVelocity && projectedSupply) ? (projectedASV / projectedVelocity) / projectedSupply : 0;
+            const cagrFlowPrice = parsedCurrentPrice ? (futurePrice / parsedCurrentPrice) ** (1 / parsedForecastHorizon) - 1 : 0;
+            const asvGrowthSensitivity = parsedASVGrowthRate / 0.01;
+            const velocityDeclineSensitivity = (-parsedVelocityChangeRate) / 0.01;
+            const maxLockupStressTest = effectiveSupply ? adjustedFlow / (effectiveSupply * 0.1) : 0;
+            const fairMarketGapBear = parsedCurrentPrice ? ((adjustedFlow / (effectiveSupply * (parsedASV * 0.8))) - parsedCurrentPrice) / parsedCurrentPrice * 100 : 0;
+            const fairMarketGapBull = parsedCurrentPrice ? ((adjustedFlow / (effectiveSupply * (parsedASV * 1.2))) - parsedCurrentPrice) / parsedCurrentPrice * 100 : 0;
+            const futureLiquiditySufficiencyRatio = adjustedFlow ? (marketCap / adjustedFlow) * (projectedASV / (parsedASV || 1)) : 0;
+            const settlementCoverageRatio = (effectiveSupply && parsedCurrentPrice) ? parsedASV / (effectiveSupply * parsedCurrentPrice) : 0;
+            const theoreticalFlow = flow;
+            const realizedVsTheoreticalFlow = (theoreticalFlow && parsedVelocity) ? parsedASV / (theoreticalFlow * parsedVelocity) : 0;
+            const transactionLatencyIndex = industryBenchmark ? avgTxConfirmationTime / industryBenchmark : 0;
+            const userAdoptionRate = walletGrowthRate;
+            const operationalScalabilityScore = parsedASV ? projectedASV / parsedASV : 0;
+
+            // Input fields configuration
+            const inputs = [
+                { label: 'Settlement Volume Type', type: 'select', value: settlementVolumeType, setValue: setSettlementVolumeType, options: ['total', 'onchain'], id: 'settlementVolumeType' },
+                { label: 'Annual Settlement Volume ($ ASV)', type: 'text', value: asv, setValue: setAsv, placeholder: 'e.g., 500,000,000,000' },
+                { label: 'ASV Growth Rate (% per year)', type: 'text', value: asvGrowthRate, setValue: setAsvGrowthRate, placeholder: 'e.g., 5' },
+                { label: 'Velocity (times per year)', type: 'text', value: velocity, setValue: setVelocity, placeholder: 'e.g., 10' },
+                { label: 'Velocity Change Rate (% per year)', type: 'text', value: velocityChangeRate, setValue: setVelocityChangeRate, placeholder: 'e.g., 2' },
+                { label: 'Forecast Horizon (years)', type: 'text', value: forecastHorizon, setValue: setForecastHorizon, placeholder: 'e.g., 5' },
+                { label: 'Total Circulating Supply (tokens)', type: 'text', value: totalSupply, setValue: setTotalSupply, placeholder: 'e.g., 100,000,000,000' },
+                { label: 'Locked Supply Percentage (%)', type: 'text', value: lockedSupplyPercent, setValue: setLockedSupplyPercent, placeholder: 'e.g., 20' },
+                { label: 'Additional Locked Supply Next Year (%)', type: 'text', value: additionalLockedSupply, setValue: setAdditionalLockedSupply, placeholder: 'e.g., 5' },
+                { label: 'Yearly Burn Rate (tokens)', type: 'text', value: yearlyBurnRate, setValue: setYearlyBurnRate, placeholder: 'e.g., 1,000,000,000' },
+                { label: 'Use Burn Rate', type: 'checkbox', value: useBurnRate, setValue: setUseBurnRate },
+                { label: 'Liquidity Buffer Ratio (%)', type: 'text', value: liquidityBuffer, setValue: setLiquidityBuffer, placeholder: 'e.g., 20' },
+                { label: 'Use Liquidity Buffer', type: 'checkbox', value: useLiquidityBuffer, setValue: setUseLiquidityBuffer },
+                { label: 'Current Market Price ($)', type: 'text', value: currentPrice, setValue: setCurrentPrice, placeholder: 'e.g., 3.60' },
+            ];
+
+            // Results configuration
+            const results = [
+                {
+                    title: 'Core Valuation Metrics',
+                    metrics: [
+                        { label: 'Current Effective Circulating Supply', value: formatNumber(effectiveSupply), description: 'Total supply adjusted for locked tokens.' },
+                        { label: 'Current Market Capitalization', value: `$${formatNumber(marketCap)}`, description: 'Effective supply × current market price.' },
+                        { label: 'FLOW (Economic Base)', value: `$${formatNumber(flow)}`, description: 'ASV ÷ Velocity, the economic base needed to support transactions.' },
+                        { label: 'Adjusted FLOW (with buffer)', value: `$${formatNumber(adjustedFlow)}`, description: 'FLOW × (1 + Liquidity Buffer), adjusted for market stability.' },
+                        { label: 'Implied Price per Token', value: `$${formatNumber(impliedPrice)}`, description: 'Adjusted FLOW ÷ Effective Supply, the fair price based on utility.' },
+                        { label: 'Fair Market Gap (%)', value: `${formatNumber(fairMarketGap)}%`, description: 'Percentage price increase needed to match FLOW’s fair value.' },
+                        { label: 'FLOW-to-Price Ratio', value: formatNumber(flowToPriceRatio), description: 'FLOW ÷ (Market Price × Effective Supply). Above 1 means fair utility price is higher.' },
+                        { label: 'FLOW Premium (%)', value: `${formatNumber(flowPremium)}%`, description: '(Market Cap − Adjusted FLOW) ÷ Adjusted FLOW × 100%. Positive means undervalued.' },
+                    ],
+                },
+                {
+                    title: 'Efficiency & Utility Metrics',
+                    metrics: [
+                        { label: 'FLOW Yield', value: formatNumber(flowYield), description: 'FLOW ÷ Market Cap. Higher values indicate more liquidity support per dollar of market cap.' },
+                        { label: 'FLOW Efficiency', value: formatNumber(flowEfficiency), description: 'ASV ÷ Market Cap. Higher values show more settlement volume per dollar of market cap.' },
+                        { label: 'Settlement Elasticity', value: formatNumber(settlementElasticity), description: 'Evaluates ASV response to market cap changes.' },
+                        { label: 'Effective vs. Nominal Velocity', value: formatNumber(effectiveVsNominalVelocity), description: 'Compares actual to theoretical token usage.' },
+                        { label: 'Utilization Rate', value: formatNumber(utilizationRate), description: 'ASV ÷ Adjusted FLOW. Measures how fully the economic base is utilized.' },
+                        { label: 'Gas Efficiency Index', value: formatNumber(gasEfficiencyIndex), description: 'ASV ÷ Total Gas Used. Measures value per unit of transaction cost.' },
+                        { label: 'Settlement per Wallet', value: formatNumber(settlementPerWallet), description: 'ASV ÷ Active Wallets. Gauges value per user.' },
+                        { label: 'Active User Concentration (Gini)', value: formatNumber(activeUserConcentration), description: 'Assesses distribution of usage.' },
+                    ],
+                },
+                {
+                    title: 'Liquidity & Stability Metrics',
+                    metrics: [
+                        { label: 'Liquidity Stress Buffer Ratio', value: formatNumber(liquidityStressBufferRatio), description: '(Liquidity Buffer × FLOW) ÷ Market Cap. Assesses liquidity reserves.' },
+                        { label: 'Slippage Resilience Score', value: formatNumber(marketDepth / (parsedASV + slippageThreshold)), description: 'Market Depth ÷ (ASV + Slippage Threshold). Assesses resistance to large trades.' },
+                        { label: 'Price Stability under 10% Velocity Drop', value: formatNumber(priceStabilityVelocityDrop), description: 'New Implied Price ÷ Current at Velocity × 0.9.' },
+                        { label: 'Burn Amplification Factor', value: formatNumber(burnAmplificationFactor), description: 'New Implied Price after Burn ÷ Current Implied Price.' },
+                        { label: 'Lock-up Flex Impact', value: formatNumber(lockupFlexImpact), description: 'New Implied Price with Lock-up ÷ Current Implied Price.' },
+                        { label: 'Liquidity Depth Ratio', value: formatNumber(liquidityDepthRatio), description: 'Market Depth ÷ ASV. Measures available liquidity.' },
+                        { label: 'Velocity Stability Index', value: formatNumber(velocityStabilityIndex), description: 'Standard deviation of Velocity over 90 days ÷ Average Velocity.' },
+                        { label: 'Network Congestion Resistance', value: formatNumber(networkCongestionResistance), description: 'Max Transaction Capacity ÷ ASV. Evaluates capacity under high demand.' },
+                        { label: 'Speculative Volatility Buffer', value: formatNumber(speculativeVolatilityBuffer), description: '(Liquidity Buffer × Market Cap) ÷ (ASV × Volatility). Protection against price swings.' },
+                        { label: 'Future Supply Adjustment Factor', value: formatNumber(futureSupplyAdjustmentFactor), description: 'Projected Effective Supply ÷ Current Effective Supply.' },
+                    ],
+                },
+                {
+                    title: 'Risk & Volatility Metrics',
+                    metrics: [
+                        { label: '30-day FLOW Volatility', value: formatNumber(flowVolatility30), description: 'Standard deviation of daily FLOW over 30 days.' },
+                        { label: '90-day FLOW Volatility', value: formatNumber(flowVolatility90), description: 'Standard deviation of daily FLOW over 90 days.' },
+                        { label: 'Annualized FLOW Return vs. Market', value: formatNumber(annualizedFlowReturnVsMarket), description: 'Annual FLOW Return ÷ Market Return.' },
+                        { label: 'Implied Downside if ASV Drops 20%', value: formatNumber(impliedDownsideASVDrop), description: 'New Implied Price at ASV × 0.8 ÷ Current.' },
+                        { label: 'Implied Upside if Velocity Halves', value: formatNumber(impliedUpsideVelocityHalf), description: 'New Implied Price at Velocity × 0.5 ÷ Current.' },
+                        { label: 'Market Correlation Risk', value: formatNumber(marketCorrelationRisk), description: 'Correlation Coefficient of Token Price vs. Crypto Market Index.' },
+                    ],
+                },
+                {
+                    title: 'Forecasting & Scenario Metrics',
+                    metrics: [
+                        { label: `Future Price (in ${parsedForecastHorizon} years)`, value: `$${formatNumber(futurePrice)}`, description: 'Projected ASV ÷ Projected Velocity ÷ Projected Effective Supply.' },
+                        { label: '5-year CAGR FLOW Price', value: `${formatNumber(cagrFlowPrice * 100)}%`, description: '(Future Price ÷ Current Price)^(1/5) - 1.' },
+                        { label: 'ASV Growth Sensitivity', value: formatNumber(asvGrowthSensitivity), description: '% Δ Implied Price ÷ % Δ ASV.' },
+                        { label: 'Velocity Decline Sensitivity', value: formatNumber(velocityDeclineSensitivity), description: '% Δ Implied Price ÷ % Δ Velocity.' },
+                        { label: 'Max Lock-up Stress Test', value: formatNumber(maxLockupStressTest), description: 'Adjusted FLOW ÷ Minimum Effective Supply.' },
+                        { label: 'Fair Market Gap in Bear Scenario', value: `${formatNumber(fairMarketGapBear)}%`, description: 'Gap in low ASV case.' },
+                        { label: 'Fair Market Gap in Bull Scenario', value: `${formatNumber(fairMarketGapBull)}%`, description: 'Gap in high ASV case.' },
+                        { label: 'Future Liquidity Sufficiency Ratio', value: formatNumber(futureLiquiditySufficiencyRatio), description: '(Current Market Cap ÷ Projected FLOW) × (Projected ASV ÷ Current ASV).' },
+                    ],
+                },
+                {
+                    title: 'Operational Ratios',
+                    metrics: [
+                        { label: 'Settlement Coverage Ratio', value: formatNumber(settlementCoverageRatio), description: 'ASV ÷ (Effective Supply × Price). Measures transaction coverage.' },
+                        { label: 'Realized Settlement vs Theoretical FLOW', value: formatNumber(realizedVsTheoreticalFlow), description: 'ASV ÷ (Theoretical FLOW × Velocity). Validates FLOW model.' },
+                        { label: 'Transaction Latency Index', value: formatNumber(transactionLatencyIndex), description: 'Average Transaction Confirmation Time ÷ Industry Benchmark.' },
+                        { label: 'User Adoption Rate', value: `${formatNumber(userAdoptionRate * 100)}%`, description: '% Δ Active Wallets ÷ Time Period.' },
+                        { label: 'Operational Scalability Score', value: formatNumber(operationalScalabilityScore), description: 'Projected ASV ÷ Current ASV. Assesses readiness for growth.' },
+                    ],
+                },
+            ];
+
+            return (
+                <ErrorBoundary>
+                    <div className="min-h-screen bg-gray-100 p-4">
+                        <div className="max-w-4xl mx-auto">
+                            <h1 className="text-3xl font-bold text-center mb-6">FLOWnomics Calculator</h1>
+                            <p className="text-center mb-8">Calculate the Functional Liquidity Operating Worth Metrics for utility tokens like XRP.</p>
+                            
+                            {/* Input Form */}
+                            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+                                <h2 className="text-2xl font-semibold mb-4">Input Parameters</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {inputs.map((input, index) => (
+                                        <div key={index} className="flex flex-col">
+                                            <label className="font-medium">{input.label}</label>
+                                            {input.type === 'select' ? (
+                                                <select
+                                                    value={input.value}
+                                                    onChange={(e) => input.setValue(e.target.value)}
+                                                    className="mt-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="total">Total (On-Chain + Off-Chain)</option>
+                                                    <option value="onchain">On-Chain Only</option>
+                                                </select>
+                                            ) : input.type === 'checkbox' ? (
+                                                <input
+                                                    type="checkbox"
+                                                    checked={input.value}
+                                                    onChange={(e) => input.setValue(e.target.checked)}
+                                                    className="mt-1 h-5 w-5"
+                                                />
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={input.value}
+                                                    onChange={(e) => input.setValue(e.target.value)}
+                                                    placeholder={input.placeholder}
+                                                    className="mt-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Results */}
+                            <div className="bg-white p-6 rounded-lg shadow-md">
+                                <h2 className="text-2xl font-semibold mb-4">Results</h2>
+                                {results.map((section, index) => (
+                                    <div key={index} className="mb-6">
+                                        <h3 className="text-xl font-semibold mb-2">{section.title}</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {section.metrics.map((metric, idx) => (
+                                                <div key={idx} className="p-4 bg-gray-50 rounded-lg">
+                                                    <p className="font-medium">{metric.label}: {metric.value}</p>
+                                                    <p className="text-sm text-gray-600">{metric.description}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Footer Links */}
+                            <div className="mt-8 text-center">
+                                <h3 className="text-lg font-semibold mb-4">Explore More FLOWnomics Resources</h3>
+                                <p><a href="https://github.com/futurexrp/FLOWnomics" className="text-blue-600 hover:underline">🌐 View the Full FLOWnomics Repository on GitHub</a></p>
+                                <p><a href="https://futurexrp.github.io/FLOWnomics/#cheat-sheet" className="text-blue-600 hover:underline">📝 Read the Cheat Sheet & Beginner Guide</a></p>
+                                <p className="mt-4 text-gray-600">Created by Matt Blair.</p>
+                            </div>
+                        </div>
+                    </div>
+                </ErrorBoundary>
+            );
+        }
+
+        try {
+            ReactDOM.render(<FLOWnomicsCalculator />, document.getElementById('root'));
+            console.log('React app rendered successfully');
+        } catch (error) {
+            console.error('Rendering error:', error);
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('error').textContent = `Failed to render: ${error.message}`;
+        }
+    </script>
+</body>
 </html>
