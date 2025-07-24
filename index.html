@@ -15,7 +15,6 @@
     <script type="text/babel">
         const { useState, Component } = React;
 
-        // Error Boundary Component
         class ErrorBoundary extends Component {
             state = { error: null };
             static getDerivedStateFromError(error) {
@@ -37,11 +36,10 @@
         function parseInput(value) {
             if (!value) return 0;
             const parsed = parseFloat(value.replace(/,/g, '')) || 0;
-            return parsed >= 0 ? parsed : 0; // Ensure non-negative
+            return parsed >= 0 ? parsed : 0;
         }
 
         function FLOWnomicsCalculator() {
-            // State for inputs
             const [settlementVolumeType, setSettlementVolumeType] = useState('total');
             const [asv, setAsv] = useState('');
             const [asvFutureValue, setAsvFutureValue] = useState('');
@@ -76,7 +74,6 @@
             const [industryBenchmark, setIndustryBenchmark] = useState('');
             const [walletGrowthRate, setWalletGrowthRate] = useState('');
 
-            // Parse inputs with validation
             const parsedASV = parseInput(asv);
             const parsedASVFutureValue = parseInput(asvFutureValue);
             const parsedVelocity = parseInput(velocity) || 1;
@@ -108,7 +105,6 @@
             const parsedIndustryBenchmark = parseInput(industryBenchmark) || 1;
             const parsedWalletGrowthRate = parseInput(walletGrowthRate) / 100;
 
-            // Calculations
             const effectiveSupply = parsedTotalSupply * (1 - parsedLockedSupplyPercent);
             const marketCap = effectiveSupply * parsedCurrentPrice;
             const flow = parsedASV / parsedVelocity;
@@ -152,15 +148,15 @@
             const maxLockupStressTest = effectiveSupply ? adjustedFlow / (effectiveSupply * 0.1) : 0;
             const fairMarketGapBear = parsedCurrentPrice ? ((adjustedFlow / (effectiveSupply * (parsedASV * 0.8))) - parsedCurrentPrice) / parsedCurrentPrice * 100 : 0;
             const fairMarketGapBull = parsedCurrentPrice ? ((adjustedFlow / (effectiveSupply * (parsedASV * 1.2))) - parsedCurrentPrice) / parsedCurrentPrice * 100 : 0;
-            const futureLiquiditySufficiencyRatio = adjustedFlow ? (marketCap / adjustedFlow) * (projectedASV / (parsedASV || 1)) : 0;
+            const projectedFlow = projectedASV / projectedVelocity;
+            const futureLiquiditySufficiencyRatio = projectedFlow ? (marketCap / projectedFlow) * (projectedASV / (parsedASV || 1)) : 0;
             const settlementCoverageRatio = (effectiveSupply && parsedCurrentPrice) ? parsedASV / (effectiveSupply * parsedCurrentPrice) : 0;
-            const theoreticalFlow = flow; // Simplified, could be enhanced with network specs
+            const theoreticalFlow = flow;
             const realizedVsTheoreticalFlow = (theoreticalFlow && parsedVelocity) ? parsedASV / (theoreticalFlow * parsedVelocity) : 0;
             const transactionLatencyIndex = parsedIndustryBenchmark ? parsedAvgTxConfirmationTime / parsedIndustryBenchmark : 0;
             const userAdoptionRate = parsedWalletGrowthRate;
             const operationalScalabilityScore = parsedASV ? projectedASV / parsedASV : 0;
 
-            // Input fields configuration
             const inputs = [
                 { label: 'Settlement Volume Type', type: 'select', value: settlementVolumeType, setValue: setSettlementVolumeType, options: ['total', 'onchain'], id: 'settlementVolumeType' },
                 { label: 'Annual Settlement Volume ($ ASV)', type: 'text', value: asv, setValue: setAsv, placeholder: 'e.g., 500,000,000,000' },
@@ -197,7 +193,6 @@
                 { label: 'Wallet Growth Rate (% per period)', type: 'text', value: walletGrowthRate, setValue: setWalletGrowthRate, placeholder: 'e.g., 20' },
             ];
 
-            // Results configuration
             const results = [
                 {
                     title: 'Core Valuation Metrics',
@@ -283,7 +278,6 @@
                             <h1 className="text-3xl font-bold text-center mb-6">FLOWnomics Calculator</h1>
                             <p className="text-center mb-8">Calculate the Functional Liquidity Operating Worth Metrics for utility tokens like XRP.</p>
                             
-                            {/* Input Form */}
                             <div className="bg-white p-6 rounded-lg shadow-md mb-8">
                                 <h2 className="text-2xl font-semibold mb-4">Input Parameters</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,7 +314,6 @@
                                 </div>
                             </div>
 
-                            {/* Results */}
                             <div className="bg-white p-6 rounded-lg shadow-md">
                                 <h2 className="text-2xl font-semibold mb-4">Results</h2>
                                 {results.map((section, index) => (
@@ -336,29 +329,3 @@
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-
-                            {/* Footer Links */}
-                            <div className="mt-8 text-center">
-                                <h3 className="text-lg font-semibold mb-4">Explore More FLOWnomics Resources</h3>
-                                <p><a href="https://github.com/futurexrp/FLOWnomics" className="text-blue-600 hover:underline">🌐 View the Full FLOWnomics Repository on GitHub</a></p>
-                                <p><a href="https://futurexrp.github.io/FLOWnomics/#cheat-sheet" className="text-blue-600 hover:underline">📝 Read the Cheat Sheet & Beginner Guide</a></p>
-                                <p className="mt-4 text-gray-600">Created by Matt Blair.</p>
-                            </div>
-                        </div>
-                    </div>
-                </ErrorBoundary>
-            );
-        }
-
-        try {
-            ReactDOM.render(<FLOWnomicsCalculator />, document.getElementById('root'));
-            console.log('React app rendered successfully');
-        } catch (error) {
-            console.error('Rendering error:', error);
-            document.getElementById('error').classList.remove('hidden');
-            document.getElementById('error').textContent = `Failed to render: ${error.message}`;
-        }
-    </script>
-</body>
-</html>
