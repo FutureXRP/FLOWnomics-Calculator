@@ -16,13 +16,22 @@
         const { useState, Component } = React;
 
         class ErrorBoundary extends Component {
-            state = { error: null };
+            state = { error: null, errorInfo: null };
             static getDerivedStateFromError(error) {
                 return { error: error.message };
             }
+            componentDidCatch(error, errorInfo) {
+                console.error('Error caught by ErrorBoundary:', error, errorInfo);
+                this.setState({ error: error.message, errorInfo });
+            }
             render() {
                 if (this.state.error) {
-                    return <div className="text-red-600 text-center p-4">Error: {this.state.error}</div>;
+                    return (
+                        <div className="text-red-600 text-center p-4">
+                            <h2>Error: {this.state.error}</h2>
+                            <p>{this.state.errorInfo?.componentStack || 'Check console for details.'}</p>
+                        </div>
+                    );
                 }
                 return this.props.children;
             }
@@ -329,3 +338,29 @@
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+
+                            <div className="mt-8 text-center">
+                                <h3 className="text-lg font-semibold mb-4">Explore More FLOWnomics Resources</h3>
+                                <p><a href="https://github.com/futurexrp/FLOWnomics" className="text-blue-600 hover:underline">🌐 View the Full FLOWnomics Repository on GitHub</a></p>
+                                <p><a href="https://futurexrp.github.io/FLOWnomics/cheat-sheet.pdf" className="text-blue-600 hover:underline">📝 Read the Cheat Sheet & Beginner Guide (PDF)</a></p>
+                                <p className="mt-4 text-gray-600">Created by Matt Blair.</p>
+                            </div>
+                        </div>
+                    </div>
+                </ErrorBoundary>
+            );
+        }
+
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<FLOWnomicsCalculator />);
+            console.log('React app rendered successfully');
+        } catch (error) {
+            console.error('Rendering error:', error);
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('error').textContent = `Failed to render: ${error.message}`;
+        }
+    </script>
+</body>
+</html>
