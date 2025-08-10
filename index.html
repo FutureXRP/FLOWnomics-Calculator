@@ -125,6 +125,10 @@
       const [liquidityBuffer, setLiquidityBuffer] = useState(20); // %
       const [useLiquidityBuffer, setUseLiquidityBuffer] = useState(true);
       const [currentPrice, setCurrentPrice] = useState(3.6);
+      // Price slider zoom (10 / 100 / 1,000 / 10,000)
+      const [priceRange, setPriceRange] = useState(100);
+      const priceStep = React.useMemo(()=> (priceRange <= 10 ? 0.001 : priceRange <= 100 ? 0.01 : priceRange <= 1000 ? 0.1 : 1), [priceRange]);
+      React.useEffect(()=>{ if (currentPrice > priceRange) setCurrentPrice(priceRange); }, [priceRange]);
       const [totalGasUsed, setTotalGasUsed] = useState(1_000_000);
       const [activeWallets, setActiveWallets] = useState(1_000_000);
       const [giniCoefficient, setGiniCoefficient] = useState(0.4);
@@ -396,7 +400,27 @@
               <SliderField label="Liquidity Buffer (%)" value={liquidityBuffer} setValue={setLiquidityBuffer} min={0} max={200} step={0.5} format="pct" />
               <ToggleField label="Use Liquidity Buffer" checked={useLiquidityBuffer} onChange={setUseLiquidityBuffer} />
 
-              <SliderField label="Current Market Price ($)" value={currentPrice} setValue={setCurrentPrice} min={0} max={10000} step={0.01} />
+              <div className="p-4 bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <div>
+                    <div className="text-sm font-semibold">Current Market Price ($)</div>
+                    <div className="mt-2 inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 gap-1">
+                      {[10,100,1000,10000].map((m)=> (
+                        <button key={m} type="button" onClick={()=>setPriceRange(m)}
+                          className={"px-2.5 py-1.5 text-xs font-semibold rounded-lg transition " + (priceRange===m ? "bg-indigo-600 text-white shadow" : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200") }>
+                          {m.toLocaleString()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-sm font-bold tabular-nums">{fmt.usd(currentPrice)}</div>
+                </div>
+                <input type="range" className="w-full accent-indigo-500" min={0} max={priceRange} step={priceStep} value={currentPrice} onChange={e=>setCurrentPrice(parseNum(e.target.value,0))} />
+                <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                  <span>$0</span>
+                  <span>${'{'}priceRange.toLocaleString(){'}'}</span>
+                </div>
+              </div>
               <SliderField label="Total Gas Used (native units)" value={totalGasUsed} setValue={setTotalGasUsed} min={1} max={10_000_000_000} step={1} format="short" />
               <SliderField label="Active Wallets" value={activeWallets} setValue={setActiveWallets} min={1} max={500_000_000} step={1} format="short" />
               <SliderField label="Gini Coefficient" value={giniCoefficient} setValue={setGiniCoefficient} min={0} max={1} step={0.01} />
@@ -417,18 +441,18 @@
 
             {/* Results Column */}
             <section className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm min-h-[96px]">
                   <div className="text-[11px] uppercase tracking-wide text-slate-500">Implied Price</div>
-                  <div className="mt-1 text-2xl font-extrabold tabular-nums">{fmt.usd(calc.implied)}</div>
+                  <div className="mt-1 text-xl sm:text-2xl font-extrabold tabular-nums break-words">{fmt.usd(calc.implied)}</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm min-h-[96px]">
                   <div className="text-[11px] uppercase tracking-wide text-slate-500">Effective Float</div>
-                  <div className="mt-1 text-2xl font-extrabold tabular-nums">{fmt.num(calc.eSupply)}</div>
+                  <div className="mt-1 text-xl sm:text-2xl font-extrabold tabular-nums break-words">{fmt.num(calc.eSupply)}</div>
                 </div>
-                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="p-4 rounded-2xl bg-white/70 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm min-h-[96px]">
                   <div className="text-[11px] uppercase tracking-wide text-slate-500">Annual FLOW</div>
-                  <div className="mt-1 text-2xl font-extrabold tabular-nums">{fmt.usd(parsed.ASV / parsed.vel)}</div>
+                  <div className="mt-1 text-xl sm:text-2xl font-extrabold tabular-nums break-words">{fmt.usd(parsed.ASV / parsed.vel)}</div>
                 </div>
               </div>
 
